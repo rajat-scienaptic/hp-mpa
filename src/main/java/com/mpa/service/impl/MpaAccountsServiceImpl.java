@@ -46,13 +46,15 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
     @Autowired
     protected RestTemplate restTemplate;
 
-    Logger logger = LoggerFactory.getLogger(MpaAccountsServiceImpl.class);
+    protected Logger logger = LoggerFactory.getLogger(MpaAccountsServiceImpl.class);
 
+    //Method to get MPA Accounts By Country
     @Override
     public final List<MpaAccounts> getMpaAccountsDataByCountry(final String country) {
         return mpaAccountsRepository.findAllByCountry(country);
     }
 
+    //Method to get Account Data for a selected MPA Account
     @Override
     public final AccountDataDTO getMpaDataByAccount(final QppDTO qppDTO) {
         List<String> upcomingCountryMarketPlaces;
@@ -63,7 +65,9 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
 
         MpaAccounts mpaAccounts;
 
+        //Checking if the the location ID is empty or null
         if (qppDTO.getLocationId() == null || qppDTO.getLocationId().isEmpty()) {
+            //Checking if the selected country is USA or CANADA
             if (qppDTO.getCountry().equalsIgnoreCase("usa") || qppDTO.getCountry().equalsIgnoreCase("canada")) {
                 mpaAccounts = mpaAccountsRepository.findByCountryAndLegalBusinessName(qppDTO.getCountry(), qppDTO.getAccount());
             } else {
@@ -77,6 +81,7 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
             }
         }
 
+        //If the an MPA Account was found then Fetching details
         if (mpaAccounts != null) {
             if (mpaAccounts.getMarketPlaces() != null) {
                 existingCountryMarketPlaces = Arrays.asList(mpaAccounts.getMarketPlaces().split(","));
@@ -96,18 +101,23 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
             accountDataDTO.setStoreFrontName(mpaAccounts.getStoreFrontName());
         }
 
+        //If the selected country is "USA" then Fetching data from USA QPP Database
         if (qppDTO.getCountry().equalsIgnoreCase("usa")) {
             UsQPP usQpp;
+            //Location ID Null Check for USA
             if (qppDTO.getLocationId() == null || qppDTO.getLocationId().isEmpty()) {
+                //Fetching just account names
                 usQpp = usqppRepository.findTopDataByAccount(qppDTO.getAccount());
             } else {
                 try {
+                    //Fetching merged value of account and location id for USA
                     usQpp = usqppRepository.findDataByAccountAndLocationId(qppDTO.getAccount(), qppDTO.getLocationId());
                 } catch (Exception e) {
                     throw new CustomException(getNonUniqueResultExceptionMessage(qppDTO), HttpStatus.BAD_REQUEST);
                 }
             }
 
+            //If the a QPP Account was found then Fetching details
             if (usQpp != null) {
                 upcomingCountryMarketPlaces = countryMarketPlaceRepository.findByCountryId(getCountryIdByName(qppDTO.getCountry()));
                 accountDataDTO.setLocationId(usQpp.getLocationId());
@@ -115,18 +125,22 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
                 accountDataDTO.setUpcomingCountryMarketPlaces(upcomingCountryMarketPlaces);
                 accountDataDTO.setLegalBusinessName(usQpp.getDba());
             }
-        } else if (qppDTO.getCountry().equalsIgnoreCase("canada")) {
+        } else if (qppDTO.getCountry().equalsIgnoreCase("canada")) { //If the selected country is "CANADA" then Fetching data from CANADA QPP Database
             CaQPP caQpp;
+            //Location ID Null Check for CANADA
             if (qppDTO.getLocationId() == null || qppDTO.getLocationId().isEmpty()) {
+                //Fetching just account names
                 caQpp = caqppRepository.findTopDataByCompanyLegalName(qppDTO.getAccount());
             } else {
                 try {
+                    //Fetching merged value of account and location id for CANADA
                     caQpp = caqppRepository.findDataByCompanyLegalNameAndLocationId(qppDTO.getAccount(), qppDTO.getLocationId());
                 } catch (Exception e) {
                     throw new CustomException(getNonUniqueResultExceptionMessage(qppDTO), HttpStatus.BAD_REQUEST);
                 }
             }
 
+            //If the a QPP Account was found then Fetching details
             if (caQpp != null) {
                 upcomingCountryMarketPlaces = countryMarketPlaceRepository.findByCountryId(getCountryIdByName(qppDTO.getCountry()));
                 accountDataDTO.setLocationId(caQpp.getLocationId());
@@ -136,12 +150,15 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
             }
         } else {
             ObjectMapper objectMapper = new ObjectMapper();
-
             MexicoQPP mexicoQpp;
+
+            //Location ID Nul Check for Mexico
             if (qppDTO.getLocationId() == null || qppDTO.getLocationId().isEmpty()) {
+                //Fetching just account names
                 mexicoQpp = objectMapper.convertValue(mexicoqppRepository.findTopDataByAccount(qppDTO.getAccount()), MexicoQPP.class);
             } else {
                 try {
+                    //Fetching merged value of account and location id for Mexico
                     mexicoQpp = objectMapper.convertValue(mexicoqppRepository.findDataByAccountAndLocationId(qppDTO.getAccount(), qppDTO.getLocationId()), MexicoQPP.class);
                 } catch (Exception e) {
                     throw new CustomException(getNonUniqueResultExceptionMessage(qppDTO), HttpStatus.BAD_REQUEST);
@@ -161,6 +178,7 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
         return accountDataDTO;
     }
 
+    //Method to get an ID for a given country
     private Integer getCountryIdByName(final String countryName) {
         if (countryRepository.getCountryId(countryName) == null) {
             throw new CustomException("Country with name: " + countryName + " not found !", HttpStatus.NOT_FOUND);
@@ -168,6 +186,7 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
         return countryRepository.getCountryId(countryName);
     }
 
+    //Method to filter MPA Accounts Data
     @Override
     public final List<MpaAccounts> getMpaAccountsDataByFilter(final MpaAccountsDTO mpaAccountsDTO) {
         return findQualifiedMarketPlaceDataByCriteria(mpaAccountsDTO);
@@ -199,6 +218,7 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
                 });
     }
 
+    //Method to Save or Update Accounts Data
     @Override
     public Optional<MpaAccounts> saveOrUpdateMpaAccountsData(final MpaAccountsDTO mpaAccountsDTO, final String cookie) throws ParseException {
         if (mpaAccountsDTO.getId() != null) {
@@ -218,12 +238,15 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
         return mpaAccountsRepository.findById(saveAccountData(mpaAccountsDTO, cookie));
     }
 
+    //Method to save MPA Account data and return its ID
     public final Integer saveAccountData(final MpaAccountsDTO mpaAccountsDTO, String cookie) {
         MpaAccounts newMpaAccount = new MpaAccounts();
 
+        //Status NULL Check for MPA Accounts
         if (mpaAccountsDTO.getStatus() == null || mpaAccountsDTO.getStatus().isEmpty()) {
             throw new CustomException("Status is a mandatory field !", HttpStatus.BAD_REQUEST);
         } else {
+            //Check to ensure that MPA Number is available when the status is either Active or Accepted
             if ((mpaAccountsDTO.getStatus().equalsIgnoreCase("active")
                     || mpaAccountsDTO.getStatus().equalsIgnoreCase("accepted (but no storefront)"))
                     && (mpaAccountsDTO.getMpaNumber() == null || mpaAccountsDTO.getMpaNumber().isEmpty())) {
@@ -231,14 +254,17 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
             }
         }
 
+        //Saving Account Data to Legal Business Name Column in case of USA and CANADA
         if (mpaAccountsDTO.getCountry().equalsIgnoreCase("usa") || mpaAccountsDTO.getCountry().equalsIgnoreCase("canada")) {
             newMpaAccount.setDba(mpaAccountsDTO.getDba());
             newMpaAccount.setLegalBusinessName(mpaAccountsDTO.getAccount());
         } else {
+            //Saving Account Data to DBA Column in case of USA and CANADA
             newMpaAccount.setDba(mpaAccountsDTO.getAccount());
             newMpaAccount.setLegalBusinessName(mpaAccountsDTO.getLegalBusinessName());
         }
 
+        //Checking if an MPA number exists in the DB
         checkIfMpaExists(mpaAccountsDTO);
 
         newMpaAccount.setCountry(mpaAccountsDTO.getCountry());
@@ -251,12 +277,21 @@ public class MpaAccountsServiceImpl implements MpaAccountsService {
         newMpaAccount.setPartnerId(mpaAccountsDTO.getPartnerId());
         newMpaAccount.setStatus(mpaAccountsDTO.getStatus().trim());
 
+        //Saving an MPA Account to DB and getting its ID
         int id = mpaAccountsRepository.save(newMpaAccount).getId();
+
+        //Finding the record that was just saved
         Optional<MpaAccounts> mpaAccounts = mpaAccountsRepository.findById(id);
+
+        //Updating MPA Accounts Data Chane Logs
         mpaAccounts.ifPresent(accounts -> updateMpaAccountsLog(accounts, cookie));
+
+        //Returning the saved MPA Account ID
         return id;
     }
 
+
+    //Method to update an MPA Account
     private MpaAccounts updateMpaAccount(MpaAccounts mpa, MpaAccountsDTO mpaAccountsDTO) {
         MpaAccounts mpaAccounts = new MpaAccounts();
         BeanUtils.copyProperties(mpa, mpaAccounts);
