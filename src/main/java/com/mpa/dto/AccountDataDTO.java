@@ -15,8 +15,9 @@ import java.util.List;
 @Data
 public class AccountDataDTO {
     private Integer id;
+    private String dba;
     private String storeFrontName;
-    private String dbaOrLegalBusinessName;
+    private String legalBusinessName;
     private String partnerId;
     private String locationId;
     private String rfc;

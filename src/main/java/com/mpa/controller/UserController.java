@@ -1,6 +1,6 @@
 package com.mpa.controller;
 
-import com.mpa.model.User;
+import com.mpa.model.mpa.User;
 import com.mpa.service.UserValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

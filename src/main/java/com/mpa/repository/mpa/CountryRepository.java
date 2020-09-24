@@ -1,6 +1,6 @@
-package com.mpa.repository;
+package com.mpa.repository.mpa;
 
-import com.mpa.model.Country;
+import com.mpa.model.mpa.Country;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

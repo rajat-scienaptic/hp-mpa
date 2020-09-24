@@ -6,4 +6,5 @@ import lombok.Data;
 public class QppDTO {
     private String account;
     private String country;
+    private String locationId;
 }

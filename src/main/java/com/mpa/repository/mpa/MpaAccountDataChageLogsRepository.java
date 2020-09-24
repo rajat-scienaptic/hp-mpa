@@ -1,6 +1,6 @@
-package com.mpa.repository;
+package com.mpa.repository.mpa;
 
-import com.mpa.model.MpaAccountsDataChangeLogs;
+import com.mpa.model.mpa.MpaAccountsDataChangeLogs;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

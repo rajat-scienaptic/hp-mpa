@@ -1,4 +1,4 @@
-package com.mpa.model;
+package com.mpa.model.mpa;
 
 import lombok.Data;
 

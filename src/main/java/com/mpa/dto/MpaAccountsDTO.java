@@ -8,9 +8,10 @@ import java.util.Date;
 @Data
 public class MpaAccountsDTO {
     private Integer id;
+    private String dba;
     private String account;
     private String rfc;
-    private String dbaOrLegalBusinessName;
+    private String legalBusinessName;
     private String storeFrontName;
     private String partnerId;
     private String locationId;

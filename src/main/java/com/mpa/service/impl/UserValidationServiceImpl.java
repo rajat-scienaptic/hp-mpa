@@ -3,7 +3,7 @@ package com.mpa.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mpa.exceptions.CustomException;
-import com.mpa.model.User;
+import com.mpa.model.mpa.User;
 import com.mpa.service.UserValidationService;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.http.HttpStatus;
